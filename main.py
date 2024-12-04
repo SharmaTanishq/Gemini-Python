@@ -33,9 +33,22 @@
 #     return {"generated_text": response.text}
 
 from fastapi import FastAPI
+from pydantic import BaseModel
+import google.generativeai as genai
+import os
 
 app = FastAPI()
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+
+class Prompt(BaseModel):
+    prompt: str
 
 @app.get("/")
 async def root():
     return {"greeting": "Hello, World!", "message": "Welcome to FastAPI!"}
+
+@app.post("/generate")
+def generate_text(prompt: Prompt):
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    response = model.generate_content(prompt.prompt)    
+    return {"generated_text": response.text}
